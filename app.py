@@ -1,101 +1,82 @@
 import streamlit as st
 import pandas as pd
 from fpdf import FPDF
-import base64
+from io import BytesIO
 
-# Set Streamlit page config
-st.set_page_config(page_title="IV Drip Budgeting App", layout="centered")
+# Set page config
+st.set_page_config(page_title="IV Drip Budget Tool", layout="centered")
 
-st.markdown("""
-    <div style="background-color:#f5f5f5;padding:20px 0;">
-        <h2 style="text-align:center; color:#003366; font-weight:bold; margin-bottom:0;">Budget Report</h2>
-        <h4 style="text-align:center; color:#333333; font-weight:normal;">Project: IV Drip Monitoring System</h4>
-    </div>
-    """, unsafe_allow_html=True)
+# Page title
+st.markdown("<h1 style='text-align: center; color: #0A2940;'>Budget Report</h1>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align: center;'>Project: IV Drip Monitoring System</h4><br>", unsafe_allow_html=True)
 
-# Initial product list
-initial_data = {
-    "Product": [
-        "ESP32 S3",
-        "Break beam sensor / Reflector sensor",
-        "Optical sensor (air bubble detection)",
-        "Lithium battery (backup power)",
-        "LED (low drip night alert)",
-        "IV drip stand",
-        "Load sensor",
-        "3D printed casing (transparent)",
-        "Buzzer",
-        "LED screen (optional)"
-    ],
-    "Price": [0.00] * 10
-}
+# Product list
+products = [
+    "ESP32 S3",
+    "Break beam sensor / Reflector sensor",
+    "Optical sensor (air bubble detection)",
+    "Lithium battery (backup power)",
+    "LED (low drip night alert)",
+    "IV drip stand",
+    "Load sensor",
+    "3D printed casing (transparent)",
+    "Buzzer",
+    "LED screen (optional)"
+]
 
-df = pd.DataFrame(initial_data)
+# User input for pricing
+st.write("### Enter Prices (SGD):")
+prices = []
+for product in products:
+    price = st.number_input(f"{product}", min_value=0.0, format="%.2f", key=product)
+    prices.append(price)
 
-# Editable price inputs
-for i in range(len(df)):
-    df.at[i, "Price"] = st.number_input(
-        f"Enter price for {df.at[i, 'Product']}",
-        min_value=0.0,
-        format="%.2f",
-        key=f"price_{i}"
-    )
+# Prepare DataFrame and Total
+df = pd.DataFrame({"Component": products, "Price (SGD)": prices})
+total_budget = sum(prices)
 
-total = df["Price"].sum()
+# Generate PDF
+if st.button("📄 Generate PDF Proposal"):
 
-st.markdown("---")
-st.markdown(f"### 💰 Total Budget: SGD {total:.2f}")
+    class PDF(FPDF):
+        def header(self):
+            self.set_fill_color(232, 240, 255)
+            self.set_text_color(0, 60, 120)
+            self.set_font("Arial", "B", 16)
+            self.cell(0, 12, "Budget Report", border=0, ln=1, align="C", fill=True)
+            self.set_font("Arial", "", 12)
+            self.set_text_color(50, 50, 50)
+            self.cell(0, 10, "Project: IV Drip Monitoring System", ln=1, align="C")
+            self.ln(6)
 
-# PDF generation function
-def generate_pdf(df, total):
-    pdf = FPDF()
+    pdf = PDF()
     pdf.add_page()
-
-    # Header bar
-    pdf.set_fill_color(245, 245, 245)
-    pdf.rect(0, 0, 210, 20, 'F')
-    pdf.set_xy(10, 8)
-    pdf.set_font("Arial", "B", 16)
-    pdf.set_text_color(0, 0, 0)
-    pdf.cell(0, 10, "Budget Report", ln=True, align='C')
-    pdf.set_font("Arial", "", 12)
-    pdf.cell(0, 10, "Project: IV Drip Monitoring System", ln=True, align='C')
-    pdf.ln(10)
-
-    # Table Header
-    pdf.set_font("Arial", "B", 12)
+    pdf.set_font("Arial", "B", 11)
     pdf.set_fill_color(220, 220, 220)
-    pdf.set_text_color(0)
-    pdf.cell(140, 10, "Component", border=1, fill=True)
-    pdf.cell(40, 10, "Price (SGD)", border=1, ln=True, fill=True)
+    pdf.cell(130, 10, "Component", border=1, fill=True)
+    pdf.cell(50, 10, "Price (SGD)", border=1, ln=1, fill=True)
 
-    # Table Rows with alternating fill
     pdf.set_font("Arial", "", 11)
-    for idx, row in df.iterrows():
-        fill = idx % 2 == 0
-        pdf.set_fill_color(245, 245, 245) if fill else pdf.set_fill_color(255, 255, 255)
-        pdf.cell(140, 10, row["Product"], border="LR", fill=True)
-        pdf.set_font("Arial", "B", 11)
-        pdf.cell(40, 10, f"{row['Price']:.2f}", border="LR", ln=True, fill=True)
-        pdf.set_font("Arial", "", 11)
-
-    # Bottom line
-    pdf.cell(140, 0, "", border="T")
-    pdf.cell(40, 0, "", border="T", ln=True)
+    for product, price in zip(products, prices):
+        pdf.cell(130, 10, product, border=1)
+        pdf.cell(50, 10, f"{price:.2f}", border=1, ln=1)
 
     # Total row
-    pdf.ln(6)
-    pdf.set_font("Arial", "B", 12)
-    pdf.set_fill_color(230, 230, 230)
-    pdf.cell(140, 10, "Total Budget", border=1, fill=True)
-    pdf.set_text_color(0, 102, 0)
-    pdf.cell(40, 10, f"SGD {total:.2f}", border=1, fill=True, ln=True)
+    pdf.set_font("Arial", "B", 11)
+    pdf.set_fill_color(200, 200, 200)
+    pdf.cell(130, 10, "Total Budget", border=1, fill=True)
+    pdf.cell(50, 10, f"SGD {total_budget:.2f}", border=1, ln=1, fill=True)
 
-    return pdf.output(dest='S').encode('latin1')
+    # Output to buffer
+    pdf_bytes = pdf.output(dest='S').encode('latin1')
+    buffer = BytesIO(pdf_bytes)
+    buffer.name = "iv_drip_budget_proposal.pdf"
+    buffer.seek(0)
 
-# Download button
-if st.button("📄 Generate PDF Report"):
-    pdf_bytes = generate_pdf(df, total)
-    b64 = base64.b64encode(pdf_bytes).decode()
-    href = f'<a href="data:application/octet-stream;base64,{b64}" download="iv_drip_budget_report.pdf">📥 Download Budget Report PDF</a>'
-    st.markdown(href, unsafe_allow_html=True)
+    # Download button
+    st.download_button(
+        label="⬇️ Download PDF",
+        data=buffer,
+        file_name="iv_drip_budget_proposal.pdf",
+        mime="application/pdf"
+    )
