@@ -26,20 +26,24 @@ initial_products = [
     "LED screen (optional)"
 ]
 
-# --- Initialize product list only once ---
+# Initialize only once
 if "initialized" not in st.session_state:
-    st.session_state["products"] = [{"Product": name, "Price": 0.0} for name in initial_products]
     st.session_state["initialized"] = True
+    st.session_state["df"] = pd.DataFrame(
+        [{"Product": name, "Price": 0.0} for name in initial_products]
+    )
 
-# --- Budget Table ---
+# Editable DataFrame
 st.markdown("### 🧾 Budget Entry Table")
-st.markdown("Enter the expected price for each item. This will be used to calculate your total budget estimate.")
+st.markdown("Enter the expected price for each item below.")
 
-df = pd.DataFrame(st.session_state["products"])
-edited_df = st.data_editor(df, use_container_width=True, key="budget_table", num_rows="dynamic")
-st.session_state["products"] = edited_df.to_dict(orient="records")
+edited_df = st.data_editor(
+    st.session_state["df"],
+    use_container_width=True,
+    key="budget_editor"
+)
 
-# --- Budget Summary ---
+# Use edited_df for calculations (no overwriting session state anymore)
 total = edited_df["Price"].sum()
 st.markdown("---")
 st.subheader("💰 Total Estimated Budget")
