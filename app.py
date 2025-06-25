@@ -7,8 +7,8 @@ st.set_page_config(page_title="IV Drip Monitor Budget", layout="wide")
 
 # --- Header ---
 st.markdown(
-    "<h1 style='margin-bottom: 0;'>Startup Budgeting App for IV Drip Monitor</h1>"
-    "<p style='color: gray; margin-top: 0;'>For internal startup proposal and funding submission</p>",
+    "<h1 style='margin-bottom: 0;'>Budgeting App for IV Drip Monitor</h1>"
+    "<p style='color: gray; margin-top: 0;'>For internal business proposal and funding submission</p>",
     unsafe_allow_html=True,
 )
 
@@ -54,10 +54,10 @@ def generate_pdf(df, total):
     pdf = FPDF()
     pdf.add_page()
     
-    # Title
+    # Title (updated)
     pdf.set_font("Arial", "B", 16)
     pdf.set_text_color(40, 40, 40)
-    pdf.cell(0, 10, "Startup Budget Report", ln=True, align='C')
+    pdf.cell(0, 10, "Budget Report", ln=True, align='C')
     pdf.set_font("Arial", "", 13)
     pdf.cell(0, 10, "Project: IV Drip Monitoring System", ln=True, align='C')
     pdf.ln(10)
@@ -82,16 +82,8 @@ def generate_pdf(df, total):
     pdf.cell(140, 10, "Total Budget", border=1, fill=True)
     pdf.cell(40, 10, f"SGD {total:.2f}", border=1, ln=True, fill=True)
 
-    # Footer
-    pdf.ln(10)
-    pdf.set_font("Arial", "I", 10)
-    pdf.set_text_color(100, 100, 100)
-    pdf.cell(0, 10, "Generated using the IV Drip Startup Budgeting Tool", ln=True, align='C')
-
     return pdf.output(dest='S').encode('latin1')
 
 # Download button
 pdf_bytes = generate_pdf(edited_df, total)
 st.download_button("📥 Download PDF Report", data=pdf_bytes, file_name="iv_drip_budget.pdf", mime="application/pdf")
-
-st.caption("Generated for internal business proposal & review.")
