@@ -43,7 +43,7 @@ edited_df = st.data_editor(
     key="budget_editor"
 )
 
-# Use edited_df for calculations (no overwriting session state anymore)
+# Budget summary
 total = edited_df["Price"].sum()
 st.markdown("---")
 st.subheader("💰 Total Estimated Budget")
@@ -53,16 +53,44 @@ st.markdown(f"<h2 style='color: green;'>SGD {total:.2f}</h2>", unsafe_allow_html
 def generate_pdf(df, total):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt="Startup Budget Report: IV Drip Monitor", ln=True, align='C')
+    
+    # Title
+    pdf.set_font("Arial", "B", 16)
+    pdf.set_text_color(40, 40, 40)
+    pdf.cell(0, 10, "Startup Budget Report", ln=True, align='C')
+    pdf.set_font("Arial", "", 13)
+    pdf.cell(0, 10, "Project: IV Drip Monitoring System", ln=True, align='C')
     pdf.ln(10)
-    for idx, row in df.iterrows():
-        pdf.cell(200, 10, txt=f"{row['Product']}: SGD {row['Price']:.2f}", ln=True)
+
+    # Table Header
+    pdf.set_fill_color(240, 240, 240)
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(140, 10, "Component", border=1, fill=True)
+    pdf.cell(40, 10, "Price (SGD)", border=1, ln=True, fill=True)
+
+    # Table Rows
+    pdf.set_font("Arial", "", 12)
+    for _, row in df.iterrows():
+        pdf.cell(140, 10, row["Product"], border=1)
+        pdf.cell(40, 10, f"{row['Price']:.2f}", border=1, ln=True)
+
+    # Total
+    pdf.set_font("Arial", "B", 12)
+    pdf.ln(5)
+    pdf.set_fill_color(220, 220, 220)
+    pdf.cell(140, 10, "Total Budget", border=1, fill=True)
+    pdf.cell(40, 10, f"SGD {total:.2f}", border=1, ln=True, fill=True)
+
+    # Footer
     pdf.ln(10)
-    pdf.set_font("Arial", "B", size=12)
-    pdf.cell(200, 10, txt=f"Total Budget: SGD {total:.2f}", ln=True)
+    pdf.set_font("Arial", "I", 10)
+    pdf.set_text_color(100, 100, 100)
+    pdf.cell(0, 10, "Generated using the IV Drip Startup Budgeting Tool", ln=True, align='C')
+
     return pdf.output(dest='S').encode('latin1')
 
+# Download button
 pdf_bytes = generate_pdf(edited_df, total)
 st.download_button("📥 Download PDF Report", data=pdf_bytes, file_name="iv_drip_budget.pdf", mime="application/pdf")
 
