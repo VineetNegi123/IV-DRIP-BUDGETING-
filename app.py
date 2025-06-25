@@ -1,22 +1,16 @@
 import streamlit as st
 import pandas as pd
 from fpdf import FPDF
-from PIL import Image
 
 # --- Page Setup ---
 st.set_page_config(page_title="IV Drip Monitor Budget", layout="wide")
 
-# --- Header with Logo ---
-col1, col2 = st.columns([1, 8])
-with col1:
-    image = Image.open("logo.png")
-    st.image(image, width=60)
-with col2:
-    st.markdown(
-        "<h1 style='margin-bottom: 0;'>Startup Budgeting App for IV Drip Monitor</h1>"
-        "<p style='color: gray; margin-top: 0;'>For internal startup proposal and funding submission</p>",
-        unsafe_allow_html=True,
-    )
+# --- Header without Logo ---
+st.markdown(
+    "<h1 style='margin-bottom: 0;'>Startup Budgeting App for IV Drip Monitor</h1>"
+    "<p style='color: gray; margin-top: 0;'>For internal startup proposal and funding submission</p>",
+    unsafe_allow_html=True,
+)
 
 # --- Component List ---
 initial_products = [
