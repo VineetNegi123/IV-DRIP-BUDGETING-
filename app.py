@@ -54,14 +54,14 @@ def generate_pdf(df, total):
     pdf = FPDF()
     pdf.add_page()
 
-    # Header Bar
-    pdf.set_fill_color(240, 248, 255)  # Light blue
+    # Header Bar (light gray background)
+    pdf.set_fill_color(245, 245, 245)  # Soft gray
     pdf.rect(0, 0, 210, 20, 'F')
 
     # Title
     pdf.set_xy(10, 8)
     pdf.set_font("Arial", "B", 16)
-    pdf.set_text_color(0, 51, 102)
+    pdf.set_text_color(0, 0, 0)
     pdf.cell(0, 10, "Budget Report", ln=True, align='C')
     pdf.set_font("Arial", "", 13)
     pdf.set_text_color(50, 50, 50)
@@ -69,7 +69,7 @@ def generate_pdf(df, total):
     pdf.ln(10)
 
     # Table Header
-    pdf.set_fill_color(200, 230, 255)
+    pdf.set_fill_color(220, 220, 220)
     pdf.set_text_color(0)
     pdf.set_font("Arial", "B", 12)
     pdf.cell(140, 10, "Component", border=1, fill=True)
@@ -91,7 +91,7 @@ def generate_pdf(df, total):
     # Total
     pdf.ln(8)
     pdf.set_font("Arial", "B", 12)
-    pdf.set_fill_color(220, 240, 255)
+    pdf.set_fill_color(230, 230, 230)
     pdf.cell(140, 10, "Total Budget", border=1, fill=True)
     pdf.set_text_color(0, 102, 0)
     pdf.cell(40, 10, f"SGD {total:.2f}", border=1, fill=True, ln=True)
