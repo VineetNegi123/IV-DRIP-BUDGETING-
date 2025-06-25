@@ -2,12 +2,21 @@ import streamlit as st
 import pandas as pd
 from fpdf import FPDF
 
-st.set_page_config(page_title="Startup Budget Tracker", layout="centered")
-st.title("📊 Startup Budgeting App for IV Drip Monitor")
+# --- Page Setup ---
+st.set_page_config(page_title="IV Drip Monitor Budget", layout="wide")
 
-st.markdown("Input prices for each component. You can download the budget as a PDF to submit to your professor.")
+# --- Header with Logo ---
+col1, col2 = st.columns([1, 8])
+with col1:
+    st.image("3ccb5d92-972e-4df7-b072-7392f45c1f4d.png", width=60)
+with col2:
+    st.markdown(
+        "<h1 style='margin-bottom: 0;'>Startup Budgeting App for IV Drip Monitor</h1>"
+        "<p style='color: gray; margin-top: 0;'>For internal startup proposal and funding submission</p>",
+        unsafe_allow_html=True,
+    )
 
-# Predefined list
+# --- Component List ---
 initial_products = [
     "ESP32 S3",
     "Break beam sensor / Reflector sensor",
@@ -24,29 +33,35 @@ initial_products = [
 if "products" not in st.session_state:
     st.session_state["products"] = [{"Product": name, "Price": 0.0} for name in initial_products]
 
-# Editable table
-df = pd.DataFrame(st.session_state.products)
-edited_df = st.data_editor(df, num_rows="dynamic", key="editable_products")
+st.markdown("### 🧾 Budget Entry Table")
+st.markdown("Enter the expected price for each item. This will be used to calculate your total budget estimate.")
 
-# Save changes
-st.session_state.products = edited_df.to_dict(orient="records")
+# Editable DataFrame
+df = pd.DataFrame(st.session_state["products"])
+edited_df = st.data_editor(df, use_container_width=True, key="budget_table", num_rows="dynamic")
+st.session_state["products"] = edited_df.to_dict(orient="records")
 
-# Show total
+# --- Budget Summary ---
 total = edited_df["Price"].sum()
-st.success(f"💰 Total Estimated Budget: SGD {total:.2f}")
+st.markdown("---")
+st.subheader("💰 Total Estimated Budget")
+st.markdown(f"<h2 style='color: green;'>SGD {total:.2f}</h2>", unsafe_allow_html=True)
 
-# PDF export
+# --- PDF Generator ---
 def generate_pdf(df, total):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt="Startup IV Drip Monitor Budget Report", ln=True, align='C')
+    pdf.cell(200, 10, txt="Startup Budget Report: IV Drip Monitor", ln=True, align='C')
     pdf.ln(10)
     for idx, row in df.iterrows():
         pdf.cell(200, 10, txt=f"{row['Product']}: SGD {row['Price']:.2f}", ln=True)
-    pdf.ln(5)
+    pdf.ln(10)
+    pdf.set_font("Arial", "B", size=12)
     pdf.cell(200, 10, txt=f"Total Budget: SGD {total:.2f}", ln=True)
     return pdf.output(dest='S').encode('latin1')
 
 pdf_bytes = generate_pdf(edited_df, total)
-st.download_button("📥 Download Budget PDF", data=pdf_bytes, file_name="iv_drip_budget.pdf", mime="application/pdf")
+st.download_button("📥 Download PDF Report", data=pdf_bytes, file_name="iv_drip_budget.pdf", mime="application/pdf")
+
+st.caption("Generated for internal business proposal & review.")
