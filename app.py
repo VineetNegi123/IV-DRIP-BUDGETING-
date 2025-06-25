@@ -5,14 +5,14 @@ from fpdf import FPDF
 # --- Page Setup ---
 st.set_page_config(page_title="IV Drip Monitor Budget", layout="wide")
 
-# --- Header without Logo ---
+# --- Header ---
 st.markdown(
     "<h1 style='margin-bottom: 0;'>Startup Budgeting App for IV Drip Monitor</h1>"
     "<p style='color: gray; margin-top: 0;'>For internal startup proposal and funding submission</p>",
     unsafe_allow_html=True,
 )
 
-# --- Component List ---
+# --- Initial Component List ---
 initial_products = [
     "ESP32 S3",
     "Break beam sensor / Reflector sensor",
@@ -26,13 +26,15 @@ initial_products = [
     "LED screen (optional)"
 ]
 
-if "products" not in st.session_state:
+# --- Initialize product list only once ---
+if "initialized" not in st.session_state:
     st.session_state["products"] = [{"Product": name, "Price": 0.0} for name in initial_products]
+    st.session_state["initialized"] = True
 
+# --- Budget Table ---
 st.markdown("### 🧾 Budget Entry Table")
 st.markdown("Enter the expected price for each item. This will be used to calculate your total budget estimate.")
 
-# Editable DataFrame
 df = pd.DataFrame(st.session_state["products"])
 edited_df = st.data_editor(df, use_container_width=True, key="budget_table", num_rows="dynamic")
 st.session_state["products"] = edited_df.to_dict(orient="records")
